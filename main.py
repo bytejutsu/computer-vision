@@ -1,35 +1,30 @@
+import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image
 
-mat = np.ones(shape=(5, 5)) * 10
+blank_img = np.zeros(shape=(512, 512, 3), dtype=np.int16)
 
-print(mat)
+print(blank_img.shape)
 
-np.random.seed(101)
+# cv2.rectangle(blank_img, pt1=(225, 225), pt2=(300, 300), color=(0, 255, 0), thickness=10)
 
-arr = np.random.randint(low=0, high=100, size=(5, 5))
+# cv2.circle(img=blank_img, center=(256, 256), radius=50, color=(255, 0, 0), thickness=8)
 
-print(arr)
+# cv2.line(blank_img, pt1=(0, 0), pt2=(512, 512), color=(102, 255, 255), thickness=5)
 
-print(arr.max())
+# font = cv2.FONT_HERSHEY_SIMPLEX
 
-print(arr.min())
+# cv2.putText(blank_img, text="Hello", org=(10, 500), fontFace=font, fontScale=4, color=(255, 255, 255), thickness=3, lineType=cv2.LINE_AA)
 
-# R G B
+vertices = np.array([[100, 300], [200, 200], [400, 300], [200, 400]])
 
-# RED CHANNEL: 0 -> no red == (pure black) | 255 -> full pure red (pure white)
+vertices.shape
 
-pic = Image.open('DATA/00-puppy.jpg')
+pts = vertices.reshape((-1, 1, 2))
 
-pic_arr = np.asarray(pic)
+cv2.polylines(blank_img, [pts], isClosed=True, color=(255, 0, 0), thickness=5)
 
-print(pic_arr.shape)
 
-pic_blue = pic_arr.copy()
 
-pic_blue[:, :, 0] = 0
-pic_blue[:, :, 1] = 0
-
-plt.imshow(pic_blue)
+plt.imshow(blank_img, cmap='gray')
 plt.show()
