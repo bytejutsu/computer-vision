@@ -1,31 +1,75 @@
 import cv2
+import time
 import numpy as np
 
+# # GLOBAL VARIABLES
 
-def draw_circle(event, x, y, flags, param):
+pt1 = (0, 0)
+pt2 = (0, 0)
+topLeft_clicked = False
+botRight_clicked = False
+
+# # CALLBACK FUNCTION RECTANGLE
+
+
+def draw_rectangle(event, x, y, flags, param):
+    global pt1, pt2, topLeft_clicked, botRight_clicked
+
     if event == cv2.EVENT_LBUTTONDOWN:
-        cv2.circle(fixed_dog_backpack, (x, y), 60, (0, 0, 255), 10)
+
+        # RESET THE RECTANGLE (IT CHECKS IF THE RECT IS THERE)
+        if topLeft_clicked and botRight_clicked:
+            topLeft_clicked = False
+            botRight_clicked = False
+            pt1 = (0, 0)
+            pt2 = (0, 0)
+
+        if not topLeft_clicked:
+            pt1 = (x, y)
+            topLeft_clicked = True
+
+        elif not botRight_clicked:
+            pt2 = (x, y)
+            botRight_clicked = True
 
 
-##############################################
+# # CONNECT TO THE CALLBACK
 
-cv2.namedWindow('my_drawing', cv2.WINDOW_GUI_NORMAL)
+cap = cv2.VideoCapture(0)
 
-cv2.setMouseCallback('my_drawing', draw_circle)
+cv2.namedWindow('Test')
+cv2.setMouseCallback('Test', draw_rectangle)
 
-##############################################
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-fixed_dog_backpack = cv2.imread('DATA/dog_backpack.jpg')
+# TOP LEFT CORNER
 
-# fixed_dog_backpack = cv2.cvtColor(dog_backpack, cv2.COLOR_BGR2RGB)
+x = width // 2
+y = height // 2
 
-cv2.rectangle(fixed_dog_backpack, (300, 300), (550, 550), (0, 0, 255), 5)
+# width and height of RECTANGLE
+
+w = width // 4
+h = height // 4
+
+# BOTTOM RIGHT x + w , y + h
 
 while True:
 
-    cv2.imshow('my_drawing', fixed_dog_backpack)
+    ret, frame = cap.read()
 
-    if cv2.waitKey(20) & 0xFF == 27:
+    # DRAWING ON THE FRAME BASED OFF THE GLOBAL VARIABLES
+    if topLeft_clicked:
+        cv2.circle(frame, center=pt1, radius=5, color=(0, 0, 255), thickness=-1)
+
+    if topLeft_clicked and botRight_clicked:
+        cv2.rectangle(frame, pt1, pt2, (0, 0, 255), 2)
+
+    cv2.imshow('Test', frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
+cap.release()
 cv2.destroyAllWindows()
