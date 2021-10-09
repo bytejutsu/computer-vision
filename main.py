@@ -13,6 +13,7 @@ def display(img, cmap='gray'):
 reeses = cv2.imread('DATA/reeses_puffs.png', 0)
 cereals = cv2.imread('DATA/many_cereals.jpg', 0)
 
+
 orb = cv2.ORB_create()
 kp1, des1 = orb.detectAndCompute(reeses, None, )
 kp2, des2 = orb.detectAndCompute(cereals, None, )
