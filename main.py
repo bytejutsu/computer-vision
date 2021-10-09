@@ -3,17 +3,13 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-img = cv2.imread('DATA/sammy_face.jpg')
+flat_chess = cv2.imread('DATA/flat_chessboard.png')
 
-blurred_img = cv2.blur(img, ksize=(5, 5))
+found, corners = cv2.findChessboardCorners(flat_chess, (7, 7))
 
-# med_val = np.median(img)
-med_val = np.median(blurred_img)
+print(found)
 
-lower = int(max(0, 0.7*med_val))
-upper = int(min(255, 1.3*med_val)) + 50
+cv2.drawChessboardCorners(flat_chess, (7, 7), corners, found)
 
-edges = cv2.Canny(image=blurred_img, threshold1=lower, threshold2=upper)
-
-plt.imshow(edges)
+plt.imshow(flat_chess)
 plt.show()
