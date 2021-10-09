@@ -14,15 +14,22 @@ reeses = cv2.imread('DATA/reeses_puffs.png', 0)
 cereals = cv2.imread('DATA/many_cereals.jpg', 0)
 
 
-orb = cv2.ORB_create()
-kp1, des1 = orb.detectAndCompute(reeses, None, )
-kp2, des2 = orb.detectAndCompute(cereals, None, )
+sift = cv2.SIFT_create()
 
-bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+kp1, des1 = sift.detectAndCompute(reeses, None, )
+kp2, des2 = sift.detectAndCompute(cereals, None, )
 
-matches = bf.match(des1, des2)
-matches = sorted(matches, key=lambda x: x.distance)
+bf = cv2.BFMatcher()
 
-reeses_matches = cv2.drawMatches(reeses, kp1, cereals, kp2, matches, None, flags=2)
+good = []
 
-display(reeses_matches)
+matches = bf.knnMatch(des1, des2, k=2)
+
+for match1, match2 in matches:
+    if match1.distance < 0.75*match2.distance:
+        good.append([match1])
+
+# matches = sorted(matches, key=lambda x: x.distance)
+sift_matches = cv2.drawMatchesKnn(reeses, kp1, cereals, kp2, good, None, flags=2)
+
+display(sift_matches)
