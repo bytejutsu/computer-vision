@@ -2,74 +2,40 @@ import cv2
 import time
 import numpy as np
 
-# # GLOBAL VARIABLES
+# methods = [cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED, cv2.TM_CCORR, cv2.TM_CCORR_NORMED, cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]
 
-pt1 = (0, 0)
-pt2 = (0, 0)
-topLeft_clicked = False
-botRight_clicked = False
+methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
 
-# # CALLBACK FUNCTION RECTANGLE
+full = cv2.imread('DATA/sammy.jpg')
 
+full_copy = full.copy()
 
-def draw_rectangle(event, x, y, flags, param):
-    global pt1, pt2, topLeft_clicked, botRight_clicked
+face = cv2.imread('DATA/sammy_face.jpg')
 
-    if event == cv2.EVENT_LBUTTONDOWN:
+method = eval('cv2.TM_CCOEFF')
 
-        # RESET THE RECTANGLE (IT CHECKS IF THE RECT IS THERE)
-        if topLeft_clicked and botRight_clicked:
-            topLeft_clicked = False
-            botRight_clicked = False
-            pt1 = (0, 0)
-            pt2 = (0, 0)
+res = cv2.matchTemplate(full, face, method)
 
-        if not topLeft_clicked:
-            pt1 = (x, y)
-            topLeft_clicked = True
+min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        elif not botRight_clicked:
-            pt2 = (x, y)
-            botRight_clicked = True
+if method in [cv2.TM_SQDIFF, cv2.TM_CCORR_NORMED]:
+    top_left = min_loc
+else:
+    top_left = max_loc
 
+height, width, channels = face.shape
 
-# # CONNECT TO THE CALLBACK
+bottom_right = (top_left[0]+width, top_left[1]+height)
 
-cap = cv2.VideoCapture(0)
+cv2.rectangle(full_copy, top_left, bottom_right, (255, 0, 0), 10)
 
-cv2.namedWindow('Test')
-cv2.setMouseCallback('Test', draw_rectangle)
-
-width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-
-# TOP LEFT CORNER
-
-x = width // 2
-y = height // 2
-
-# width and height of RECTANGLE
-
-w = width // 4
-h = height // 4
-
-# BOTTOM RIGHT x + w , y + h
+cv2.namedWindow('Window')
 
 while True:
 
-    ret, frame = cap.read()
-
-    # DRAWING ON THE FRAME BASED OFF THE GLOBAL VARIABLES
-    if topLeft_clicked:
-        cv2.circle(frame, center=pt1, radius=5, color=(0, 0, 255), thickness=-1)
-
-    if topLeft_clicked and botRight_clicked:
-        cv2.rectangle(frame, pt1, pt2, (0, 0, 255), 2)
-
-    cv2.imshow('Test', frame)
+    cv2.imshow('Window', full_copy)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-cap.release()
 cv2.destroyAllWindows()
