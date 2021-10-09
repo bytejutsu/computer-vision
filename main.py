@@ -19,17 +19,24 @@ sift = cv2.SIFT_create()
 kp1, des1 = sift.detectAndCompute(reeses, None, )
 kp2, des2 = sift.detectAndCompute(cereals, None, )
 
-bf = cv2.BFMatcher()
+# FLANN
 
-good = []
+FLANN_INDEX_KDTREE = 0
+index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+search_params = dict(checks=50)
 
-matches = bf.knnMatch(des1, des2, k=2)
+flann = cv2.FlannBasedMatcher(index_params, search_params)
+matches = flann.knnMatch(des1, des2, k=2)
 
-for match1, match2 in matches:
-    if match1.distance < 0.75*match2.distance:
-        good.append([match1])
+matchesMask = [[0, 0] for i in range(len(matches))]
 
-# matches = sorted(matches, key=lambda x: x.distance)
-sift_matches = cv2.drawMatchesKnn(reeses, kp1, cereals, kp2, good, None, flags=2)
+for i, (match1, match2) in enumerate(matches):
+    if match1.distance < 0.7*match2.distance:
+        matchesMask[i] = [1, 0]
 
-display(sift_matches)
+draw_params = dict(matchColor=(0, 255, 0), singlePointColor=(255, 0, 0), matchesMask=matchesMask, flags=2)
+
+flann_matches = cv2.drawMatchesKnn(reeses, kp1, cereals, kp2, matches, None, **draw_params)
+
+display(flann_matches)
+
