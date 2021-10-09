@@ -2,38 +2,25 @@ import cv2
 import time
 import numpy as np
 
-# methods = [cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED, cv2.TM_CCORR, cv2.TM_CCORR_NORMED, cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]
+real_chess = cv2.imread('DATA/real_chessboard.jpg')
+real_chess_gray = cv2.cvtColor(real_chess, cv2.COLOR_RGB2GRAY)
 
-methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR', 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+flat_chess = cv2.imread('DATA/flat_chessboard.png')
+flat_chess_gray = cv2.cvtColor(flat_chess, cv2.COLOR_RGB2GRAY)
 
-full = cv2.imread('DATA/sammy.jpg')
+corners = cv2.goodFeaturesToTrack(real_chess_gray, 1000, 0.01, 10)
 
-full_copy = full.copy()
+corners = np.int0(corners)
 
-face = cv2.imread('DATA/sammy_face.jpg')
-
-method = eval('cv2.TM_CCOEFF')
-
-res = cv2.matchTemplate(full, face, method)
-
-min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-
-if method in [cv2.TM_SQDIFF, cv2.TM_CCORR_NORMED]:
-    top_left = min_loc
-else:
-    top_left = max_loc
-
-height, width, channels = face.shape
-
-bottom_right = (top_left[0]+width, top_left[1]+height)
-
-cv2.rectangle(full_copy, top_left, bottom_right, (255, 0, 0), 10)
+for i in corners:
+    x, y = i.ravel()
+    cv2.circle(real_chess, (x, y), 3, (255, 0, 0), -1)
 
 cv2.namedWindow('Window')
 
 while True:
 
-    cv2.imshow('Window', full_copy)
+    cv2.imshow('Window', real_chess)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
