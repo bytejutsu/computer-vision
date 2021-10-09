@@ -1,28 +1,19 @@
 import cv2
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 
-real_chess = cv2.imread('DATA/real_chessboard.jpg')
-real_chess_gray = cv2.cvtColor(real_chess, cv2.COLOR_RGB2GRAY)
+img = cv2.imread('DATA/sammy_face.jpg')
 
-flat_chess = cv2.imread('DATA/flat_chessboard.png')
-flat_chess_gray = cv2.cvtColor(flat_chess, cv2.COLOR_RGB2GRAY)
+blurred_img = cv2.blur(img, ksize=(5, 5))
 
-corners = cv2.goodFeaturesToTrack(real_chess_gray, 1000, 0.01, 10)
+# med_val = np.median(img)
+med_val = np.median(blurred_img)
 
-corners = np.int0(corners)
+lower = int(max(0, 0.7*med_val))
+upper = int(min(255, 1.3*med_val)) + 50
 
-for i in corners:
-    x, y = i.ravel()
-    cv2.circle(real_chess, (x, y), 3, (255, 0, 0), -1)
+edges = cv2.Canny(image=blurred_img, threshold1=lower, threshold2=upper)
 
-cv2.namedWindow('Window')
-
-while True:
-
-    cv2.imshow('Window', real_chess)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cv2.destroyAllWindows()
+plt.imshow(edges)
+plt.show()
