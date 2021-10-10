@@ -1,50 +1,54 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+from numpy import genfromtxt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential
+from keras.layers import Dense
+from sklearn.metrics import confusion_matrix, classification_report
+
+data = genfromtxt('DATA/bank_note_data.txt', delimiter=',')
+
+labels = data[:, 4]
+
+features = data[:, 0:4]
+
+X = features
+y = labels
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+scaler_object = MinMaxScaler()
+
+scaler_object.fit(X_train)
+
+scaled_X_train = scaler_object.transform(X_train)
+
+scaled_X_test = scaler_object.transform(X_test)
+
+model = Sequential()
+
+model.add(Dense(4, input_dim=4, activation='relu'))
+
+model.add(Dense(8, activation='relu'))
+
+model.add(Dense(1, activation='sigmoid'))
+
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+model.fit(scaled_X_train, y_train, epochs=100, verbose=2)
+
+# predictions = model.predict(scaled_X_test)
+
+predictions = (model.predict(scaled_X_test) > 0.5).astype("int32")
+
+c_m = confusion_matrix(y_test, predictions)
+
+print(c_m)
+
+print(classification_report(y_test, predictions))
+
+model.save('mysupermodel.h5')
 
 
-def display(img, cmap='gray'):
-    fig = plt.figure(figsize=(12, 10))
-    ax = fig.add_subplot(111)
-    ax.imshow(img, cmap='gray')
-    plt.show()
 
-
-nadia = cv2.imread('DATA/Nadia_Murad.jpg', 0)
-denis = cv2.imread('DATA/Denis_Mukwege.jpg', 0)
-solvay = cv2.imread('DATA/solvay_conference.jpg', 0)
-
-car_plates = cv2.imread('DATA/car_plate.jpg', 0)
-
-face_cascade = cv2.CascadeClassifier('DATA/haarcascades/haarcascade_frontalface_default.xml')
-eye_cascade = cv2.CascadeClassifier('DATA/haarcascades/haarcascade_eye.xml')
-car_plate_cascade = cv2.CascadeClassifier('DATA/haarcascades/haarcascade_russian_plate_number.xml')
-
-
-def detect_car_plates(img):
-    car_plate_img = img.copy()
-
-    car_plate_rects = car_plate_cascade.detectMultiScale(car_plate_img, scaleFactor=1.2, minNeighbors=5)
-
-    for (x, y, w, h) in car_plate_rects:
-        cv2.rectangle(car_plate_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-    return car_plate_img
-
-
-def blur_car_plates(img):
-    car_plate_img = img.copy()
-    roi = img.copy()
-
-    car_plate_rects = car_plate_cascade.detectMultiScale(car_plate_img, scaleFactor=1.3, minNeighbors=3)
-
-    for (x, y, w, h) in car_plate_rects:
-        roi = roi[y:y+h, x:x+w]
-        blurred_roi = cv2.medianBlur(roi, 7)
-        car_plate_img[y:y+h, x:x+w] = blurred_roi
-
-    return car_plate_img
-
-
-result = blur_car_plates(car_plates)
-display(result)
