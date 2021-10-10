@@ -10,33 +10,41 @@ def display(img, cmap='gray'):
     plt.show()
 
 
-reeses = cv2.imread('DATA/reeses_puffs.png', 0)
-cereals = cv2.imread('DATA/many_cereals.jpg', 0)
+nadia = cv2.imread('DATA/Nadia_Murad.jpg', 0)
+denis = cv2.imread('DATA/Denis_Mukwege.jpg', 0)
+solvay = cv2.imread('DATA/solvay_conference.jpg', 0)
+
+car_plates = cv2.imread('DATA/car_plate.jpg', 0)
+
+face_cascade = cv2.CascadeClassifier('DATA/haarcascades/haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier('DATA/haarcascades/haarcascade_eye.xml')
+car_plate_cascade = cv2.CascadeClassifier('DATA/haarcascades/haarcascade_russian_plate_number.xml')
 
 
-sift = cv2.SIFT_create()
+def detect_car_plates(img):
+    car_plate_img = img.copy()
 
-kp1, des1 = sift.detectAndCompute(reeses, None, )
-kp2, des2 = sift.detectAndCompute(cereals, None, )
+    car_plate_rects = car_plate_cascade.detectMultiScale(car_plate_img, scaleFactor=1.2, minNeighbors=5)
 
-# FLANN
+    for (x, y, w, h) in car_plate_rects:
+        cv2.rectangle(car_plate_img, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-FLANN_INDEX_KDTREE = 0
-index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-search_params = dict(checks=50)
+    return car_plate_img
 
-flann = cv2.FlannBasedMatcher(index_params, search_params)
-matches = flann.knnMatch(des1, des2, k=2)
 
-matchesMask = [[0, 0] for i in range(len(matches))]
+def blur_car_plates(img):
+    car_plate_img = img.copy()
+    roi = img.copy()
 
-for i, (match1, match2) in enumerate(matches):
-    if match1.distance < 0.7*match2.distance:
-        matchesMask[i] = [1, 0]
+    car_plate_rects = car_plate_cascade.detectMultiScale(car_plate_img, scaleFactor=1.3, minNeighbors=3)
 
-draw_params = dict(matchColor=(0, 255, 0), singlePointColor=(255, 0, 0), matchesMask=matchesMask, flags=2)
+    for (x, y, w, h) in car_plate_rects:
+        roi = roi[y:y+h, x:x+w]
+        blurred_roi = cv2.medianBlur(roi, 7)
+        car_plate_img[y:y+h, x:x+w] = blurred_roi
 
-flann_matches = cv2.drawMatchesKnn(reeses, kp1, cereals, kp2, matches, None, **draw_params)
+    return car_plate_img
 
-display(flann_matches)
 
+result = blur_car_plates(car_plates)
+display(result)
